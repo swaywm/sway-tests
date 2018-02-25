@@ -39,7 +39,7 @@ def start_server(display):
                 xvfb.kill()
                 sys.exit(1)
 
-            time.sleep(0.1)
+            time.sleep(0.001)
 
     return xvfb
 
