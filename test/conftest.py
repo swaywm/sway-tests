@@ -57,13 +57,13 @@ def sway():
         env = os.environ.copy()
         env['DISPLAY'] = display
         proc = Popen(
-            [sway_path, '-c', 'test/sway.conf'],
+            [sway_path, '-c', 'test/configs/default.conf'],
             env=env,
             stdout=PIPE,
             stderr=STDOUT)
     elif variant == 'sway':
         proc = Popen(
-            [sway_path, '-H', '-d', '-c', 'test/sway.conf'],
+            [sway_path, '-H', '-d', '-c', 'test/configs/default.conf'],
             stdout=PIPE,
             stderr=STDOUT)
 
