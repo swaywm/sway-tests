@@ -1,10 +1,8 @@
 # sway-tests
 
-The sway test suite.
+Unofficial test suite for sway.
 
 ## About
-
-The sway test suite is to make sure sway runs smoothly while development on the project is active. Write tests to make sure others don't accidently break your work later. Sway maintainers might require you to write tests for certain features to ease maintenance.
 
 The test suite starts a new sway instance in headless mode for each test. Add your tests to the `test` directory. Use the `sway` pytest fixture to get the test environment including a connection to the ipc.
 
