@@ -24,6 +24,12 @@ Now run the test suite like this:
 env/bin/pytest --sway=/path/to/sway
 ```
 
+The tests should work fine with i3 too:
+
+```
+env/bin/pytest --sway=$(which i3)
+```
+
 ## Example Test
 
 ```python

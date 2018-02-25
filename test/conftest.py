@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
 import i3ipc
-from subprocess import Popen, PIPE, STDOUT
+from util.x_display import get_x11_display
+from subprocess import Popen, PIPE, STDOUT, check_output
 import os
 import sys
 import time
@@ -25,27 +26,58 @@ def pytest_generate_tests(metafunc):
 
 
 class Sway:
-    def __init__(self, ipc, display):
+    def __init__(self, ipc, display, variant):
         self.ipc = ipc
         self.display = display
+        self.variant = variant
 
 
 @pytest.fixture()
 def sway():
-    print(sway_path)
     assert (sway_path)
 
-    with Popen(
-        [sway_path, '-H', '-d', '-c', 'test/sway.conf'],
-            stdout=PIPE,
-            stderr=STDOUT) as sway_proc:
+    version = check_output([sway_path, '--version']).decode('utf-8')
 
-        def get_socketpath(pid):
+    variant = 'unknown'
+
+    if version.startswith('i3'):
+        variant = 'i3'
+    elif version.startswith('sway'):
+        variant = 'sway'
+    else:
+        print('unknown binary variant')
+        print(version)
+        pytest.exit()
+
+    display = None
+    proc = None
+
+    if variant == 'i3':
+        display = get_x11_display()
+        env = os.environ.copy()
+        env['DISPLAY'] = display
+        proc = Popen(
+            [sway_path, '-c', 'test/sway.conf'],
+            env=env,
+            stdout=PIPE,
+            stderr=STDOUT)
+    elif variant == 'sway':
+        proc = Popen(
+            [sway_path, '-H', '-d', '-c', 'test/sway.conf'],
+            stdout=PIPE,
+            stderr=STDOUT)
+
+    with proc:
+
+        def get_socketpath(pid, variant):
             uid = os.getuid()
-            fmt = '/run/user/{uid}/sway-ipc.{uid}.{pid}.sock'
+            if variant == 'sway':
+                fmt = '/run/user/{uid}/sway-ipc.{uid}.{pid}.sock'
+            elif variant == 'i3':
+                fmt = '/run/user/{uid}/i3/ipc-socket.{pid}'
             return fmt.format(uid=uid, pid=pid)
 
-        socket_path = get_socketpath(sway_proc.pid)
+        socket_path = get_socketpath(proc.pid, variant)
 
         ipc = None
         tries = 0
@@ -60,13 +92,13 @@ def sway():
                     raise e
                 time.sleep(0.1)
 
-        # XXX this is a hacky way to get the WAYLAND_DISPLAY
-        ipc.command('exec env')
-        display = None
-        while not display:
-            line = str(sway_proc.stdout.readline(), 'utf-8')
-            if 'WAYLAND_DISPLAY' in line:
-                display = line.split('=')[1].rstrip()
+        if variant == 'sway':
+            # XXX this is a hacky way to get the WAYLAND_DISPLAY
+            ipc.command('exec env')
+            while not display:
+                line = str(proc.stdout.readline(), 'utf-8')
+                if 'WAYLAND_DISPLAY' in line:
+                    display = line.split('=')[1].rstrip()
 
-        yield Sway(ipc, display)
-        sway_proc.terminate()
+        yield Sway(ipc, display, variant)
+        proc.terminate()
