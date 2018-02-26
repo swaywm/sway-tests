@@ -2,6 +2,7 @@
 
 import i3ipc
 from util.x_display import get_x11_display
+from util.sway import Sway
 from subprocess import Popen, PIPE, STDOUT, check_output
 import os
 import sys
@@ -25,14 +26,7 @@ def pytest_generate_tests(metafunc):
         )
 
 
-class Sway:
-    def __init__(self, ipc, display, variant):
-        self.ipc = ipc
-        self.display = display
-        self.variant = variant
-
-
-@pytest.fixture()
+@pytest.yield_fixture()
 def sway():
     assert (sway_path)
 
@@ -99,6 +93,8 @@ def sway():
                 line = str(proc.stdout.readline(), 'utf-8')
                 if 'WAYLAND_DISPLAY' in line:
                     display = line.split('=')[1].rstrip()
+                    break
 
-        yield Sway(ipc, display, variant)
+        sway = Sway(ipc, display, variant)
+        yield sway
         proc.terminate()
