@@ -5,8 +5,10 @@ from threading import Thread
 import sys
 import uuid
 
-parser = ArgumentParser(description='A helper program to open up a test window')
-parser.add_argument('--title', help='the title of the window', default=uuid.uuid4())
+parser = ArgumentParser(
+    description='A helper program to open up a test window')
+parser.add_argument(
+    '--title', help='the title of the window', default=uuid.uuid4())
 
 args = parser.parse_args()
 

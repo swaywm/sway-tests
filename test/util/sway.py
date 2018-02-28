@@ -7,6 +7,7 @@ from i3ipc import Con
 
 import time
 
+
 class TestWindow:
     def __init__(self, sway, title):
         self.id = -1
@@ -21,9 +22,14 @@ class TestWindow:
             del env['WAYLAND_DISPLAY']
             env['DISPLAY'] = sway.display
 
-        self.proc = Popen(['test/util/gtk-window.py', '--title', title], env=env, stdout=PIPE, stderr=STDOUT)
+        self.proc = Popen(
+            ['test/util/gtk-window.py', '--title', title],
+            env=env,
+            stdout=PIPE,
+            stderr=STDOUT)
 
         con = None
+
         def on_window_new(ipc, e):
             if e.container.name == title:
                 con = e.container
@@ -46,6 +52,7 @@ class TestWindow:
             self.id = con.id
             break
 
+
 class Sway:
     window_counter = 0
 
@@ -53,7 +60,6 @@ class Sway:
         self.ipc = ipc
         self.display = display
         self.variant = variant
-
 
     def open_window(self):
 
@@ -65,7 +71,6 @@ class Sway:
 
         return win
 
-    
     def focused(self):
         root = self.ipc.get_tree()
         return root.find_focused()
