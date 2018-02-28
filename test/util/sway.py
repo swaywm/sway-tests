@@ -3,6 +3,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 import os
 from subprocess import Popen, PIPE, STDOUT
+from i3ipc import Con
 
 import time
 
@@ -21,6 +22,16 @@ class TestWindow:
             env['DISPLAY'] = sway.display
 
         self.proc = Popen(['test/util/gtk-window.py', '--title', title], env=env, stdout=PIPE, stderr=STDOUT)
+
+        con = None
+        def on_window_new(ipc, e):
+            if e.container.name == title:
+                con = e.container
+                ipc.main_quit()
+
+        sway.ipc.on('window::new', on_window_new)
+        sway.ipc.main()
+        return con
 
     def wait_for_map(self):
         # XXX use the window::new event
@@ -53,3 +64,8 @@ class Sway:
         win.wait_for_map()
 
         return win
+
+    
+    def focused(self):
+        root = self.ipc.get_tree()
+        return root.find_focused()
