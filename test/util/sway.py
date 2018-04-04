@@ -30,29 +30,23 @@ class TestWindow:
             stdout=PIPE,
             stderr=STDOUT)
 
-        con = None
+        self.con = None
 
         def on_window_new(ipc, e):
             if e.container.name == title:
-                con = e.container
+                self.con = e.container
                 ipc.main_quit()
 
         sway.ipc.on('window::new', on_window_new)
         sway.ipc.main()
-        return con
 
-    def wait_for_map(self):
-        # XXX use the window::new event
-        while True:
-            q = self.sway.ipc.get_tree().find_named(self.title)
-
-            if not q:
-                time.sleep(0.01)
-                continue
-
-            con = q[0]
-            self.id = con.id
-            break
+    def close(self):
+        self.con.command('kill')
+        def on_window_close(ipc, e):
+            if e.container.name == self.title:
+                ipc.main_quit()
+        self.sway.ipc.on('window::close', on_window_close)
+        self.sway.ipc.main()
 
 
 class Sway:
@@ -69,7 +63,7 @@ class Sway:
         Sway.window_counter += 1
 
         win = TestWindow(self, title)
-        win.wait_for_map()
+        #win.wait_for_map()
 
         return win
 
