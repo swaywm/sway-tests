@@ -11,7 +11,6 @@ import pytest
 
 sway_path = ''
 
-
 def pytest_addoption(parser):
     parser.addoption("--sway", help="the sway binary to test")
 

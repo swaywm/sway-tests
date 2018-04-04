@@ -1,4 +1,5 @@
-from subprocess import Popen
+from subprocess import Popen, check_output, CalledProcessError, PIPE
+import sys
 import time
 from shutil import which
 from os import listdir, path
@@ -13,17 +14,18 @@ LOCKDIR = '/tmp'
 
 
 def get_open_display():
-    # TODO find the general lock directory
-    lock_re = re.compile(r'^\.X([0-9]+)-lock$')
-    lock_files = [f for f in listdir(LOCKDIR) if lock_re.match(f)]
-    displays = [int(lock_re.search(f).group(1)) for f in lock_files]
-    open_display = min(
-        [i for i in range(0,
-                          max(displays or [0]) + 2) if i not in displays])
-    return open_display
+    i = 0
+    while True:
+        try:
+            check_output(['lsof', '/tmp/.X11-unix/X%d' % i], stderr=PIPE)
+        except CalledProcessError:
+            return i
+        i += 1
+
 
 
 def start_server(display):
+    print(display)
     xvfb = Popen([XVFB, ':%d' % display])
     # wait for the lock file to make sure the server is running
     lockfile = path.join(LOCKDIR, '.X%d-lock' % display)
@@ -34,7 +36,7 @@ def start_server(display):
         else:
             tries += 1
 
-            if tries > 100:
+            if tries > 1000:
                 print('could not start x server')
                 xvfb.kill()
                 sys.exit(1)
