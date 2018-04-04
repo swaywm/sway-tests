@@ -1,3 +1,4 @@
 i3ipc
 pytest
+vext
 vext.gi
