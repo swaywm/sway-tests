@@ -1,0 +1,158 @@
+From ec5922dacd21787af9939ea85e87f8999d69afb8 Mon Sep 17 00:00:00 2001
+From: Tony Crisci <tony@dubstepdish.com>
+Date: Tue, 3 Apr 2018 15:40:14 -0400
+Subject: [PATCH] add headless outputs option
+
+---
+ include/sway/server.h |  2 +-
+ sway/main.c           | 11 ++++++++---
+ sway/server.c         | 53 +++++++++++++++++++++++++++++++++++++++++++++++++--
+ 3 files changed, 60 insertions(+), 6 deletions(-)
+
+diff --git a/include/sway/server.h b/include/sway/server.h
+index 296fbf22..d01d17ea 100644
+--- a/include/sway/server.h
++++ b/include/sway/server.h
+@@ -43,7 +43,7 @@ struct sway_server {
+ 
+ struct sway_server server;
+ 
+-bool server_init(struct sway_server *server);
++bool server_init(struct sway_server *server, bool headless);
+ void server_fini(struct sway_server *server);
+ void server_run(struct sway_server *server);
+ 
+diff --git a/sway/main.c b/sway/main.c
+index e7f8ddd3..48b7fd20 100644
+--- a/sway/main.c
++++ b/sway/main.c
+@@ -250,13 +250,14 @@ static void drop_permissions(bool keep_caps) {
+ }
+ 
+ int main(int argc, char **argv) {
+-	static int verbose = 0, debug = 0, validate = 0;
++	static int verbose = 0, debug = 0, validate = 0, headless = 0;
+ 
+ 	static struct option long_options[] = {
+ 		{"help", no_argument, NULL, 'h'},
+ 		{"config", required_argument, NULL, 'c'},
+ 		{"validate", no_argument, NULL, 'C'},
+ 		{"debug", no_argument, NULL, 'd'},
++		{"headless", no_argument, NULL, 'H'},
+ 		{"version", no_argument, NULL, 'v'},
+ 		{"verbose", no_argument, NULL, 'V'},
+ 		{"get-socketpath", no_argument, NULL, 'p'},
+@@ -272,6 +273,7 @@ int main(int argc, char **argv) {
+ 		"  -c, --config <config>  Specify a config file.\n"
+ 		"  -C, --validate         Check the validity of the config file, then exit.\n"
+ 		"  -d, --debug            Enables full logging, including debug information.\n"
++		"  -H, --headless         Starts sway with the headless backend.\n"
+ 		"  -v, --version          Show the version number and quit.\n"
+ 		"  -V, --verbose          Enables more verbose logging.\n"
+ 		"      --get-socketpath   Gets the IPC socket path and prints it, then exits.\n"
+@@ -288,7 +290,7 @@ int main(int argc, char **argv) {
+ 	int c;
+ 	while (1) {
+ 		int option_index = 0;
+-		c = getopt_long(argc, argv, "hCdvVc:", long_options, &option_index);
++		c = getopt_long(argc, argv, "hCHdvVc:", long_options, &option_index);
+ 		if (c == -1) {
+ 			break;
+ 		}
+@@ -306,6 +308,9 @@ int main(int argc, char **argv) {
+ 		case 'd': // debug
+ 			debug = 1;
+ 			break;
++		case 'H':
++			headless = 1;
++			break;
+ 		case 'v': // version
+ 			fprintf(stdout, "sway version " SWAY_VERSION "\n");
+ 			exit(EXIT_SUCCESS);
+@@ -384,7 +389,7 @@ int main(int argc, char **argv) {
+ 
+ 	layout_init();
+ 
+-	if (!server_init(&server)) {
++	if (!server_init(&server, headless)) {
+ 		return 1;
+ 	}
+ 
+diff --git a/sway/server.c b/sway/server.c
+index 54945312..0186e806 100644
+--- a/sway/server.c
++++ b/sway/server.c
+@@ -5,6 +5,7 @@
+ #include <wayland-server.h>
+ #include <wlr/backend.h>
+ #include <wlr/backend/session.h>
++#include <wlr/backend/headless.h>
+ #include <wlr/render/wlr_renderer.h>
+ #include <wlr/types/wlr_compositor.h>
+ #include <wlr/types/wlr_gamma_control.h>
+@@ -38,12 +39,60 @@ static void server_ready(struct wl_listener *listener, void *data) {
+ 	}
+ }
+ 
+-bool server_init(struct sway_server *server) {
++static size_t parse_outputs_env(const char *name) {
++	const char *outputs_str = getenv(name);
++	if (outputs_str == NULL) {
++		return 1;
++	}
++
++	char *end;
++	int outputs = (int)strtol(outputs_str, &end, 10);
++	if (*end || outputs < 0) {
++		wlr_log(L_ERROR, "%s specified with invalid integer, ignoring", name);
++		return 1;
++	}
++
++	return outputs;
++}
++
++static struct wlr_backend *create_headless_backend(struct wl_display *display) {
++	const char *outputs_env = "SWAY_HEADLESS_OUTPUTS";
++	const char *outputs_str = getenv(outputs_env);
++	int outputs = 1;
++
++	if (outputs_str != NULL) {
++		char *end;
++		outputs = (int)strtol(outputs_str, &end, 10);
++		if (*end || outputs < 0) {
++			outputs = 1;
++		}
++	}
++
++	struct wlr_backend *backend = wlr_headless_backend_create(display);
++
++	if (backend == NULL) {
++		return NULL;
++	}
++
++	for (int i = 0; i < outputs; ++i) {
++		wlr_headless_add_output(backend, 1280, 720);
++	}
++
++	return backend;
++}
++
++bool server_init(struct sway_server *server, bool headless) {
+ 	wlr_log(L_DEBUG, "Initializing Wayland server");
+ 
+ 	server->wl_display = wl_display_create();
+ 	server->wl_event_loop = wl_display_get_event_loop(server->wl_display);
+-	server->backend = wlr_backend_autocreate(server->wl_display);
++
++	if (headless) {
++		server->backend = create_headless_backend(server->wl_display);
++	} else {
++		server->backend = wlr_backend_autocreate(server->wl_display);
++	}
++	assert(server->backend);
+ 
+ 	struct wlr_renderer *renderer = wlr_backend_get_renderer(server->backend);
+ 	assert(renderer);
+-- 
+2.14.3
+
