@@ -39,7 +39,8 @@ class TestWindow:
                 ipc.main_quit()
 
         sway.ipc.on('window::new', on_window_new)
-        sway.ipc.main()
+        sway.ipc.main(timeout=1)
+        sway.ipc.off(on_window_new)
 
     def close(self):
         self.con.command('kill')
@@ -47,7 +48,8 @@ class TestWindow:
             if e.container.name == self.title:
                 ipc.main_quit()
         self.sway.ipc.on('window::close', on_window_close)
-        self.sway.ipc.main()
+        self.sway.ipc.main(timeout=1)
+        self.sway.ipc.off(on_window_close)
 
 
 class Sway:

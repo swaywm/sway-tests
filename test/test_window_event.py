@@ -23,7 +23,8 @@ def test_window_new_event(sway):
             sway.ipc.main_quit()
 
     sway.ipc.on('window::new', on_window_new)
-    sway.ipc.main()
+    sway.ipc.main(timeout=1)
+    sway.ipc.off(on_window_new)
 
     assert event
     assert event.change == 'new'
