@@ -25,7 +25,6 @@ def get_open_display():
 
 
 def start_server(display):
-    print(display)
     xvfb = Popen([XVFB, ':%d' % display])
     # wait for the lock file to make sure the server is running
     lockfile = path.join(LOCKDIR, '.X%d-lock' % display)
