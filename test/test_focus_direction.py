@@ -20,3 +20,17 @@ def test_focus_direction(sway):
 
     sway.ipc.command('focus right')
     assert sway.focused().id == containers[2].id
+
+def test_focus_parent_child(sway):
+    win1 = sway.open_window()
+    win2 = sway.open_window()
+    sway.ipc.command('focus parent')
+
+    assert sway.focused().type == 'workspace'
+
+    sway.ipc.command('focus child')
+
+    focused = sway.focused()
+
+    assert focused.type == 'con'
+    assert focused.id == win2.id
