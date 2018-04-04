@@ -34,6 +34,7 @@ class TestWindow:
 
         def on_window_new(ipc, e):
             if e.container.name == title:
+                self.id = e.container.id
                 self.con = e.container
                 ipc.main_quit()
 
@@ -63,7 +64,6 @@ class Sway:
         Sway.window_counter += 1
 
         win = TestWindow(self, title)
-        #win.wait_for_map()
 
         return win
 
