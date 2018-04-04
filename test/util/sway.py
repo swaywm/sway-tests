@@ -5,8 +5,6 @@ import os
 from subprocess import Popen, PIPE, STDOUT
 from i3ipc import Con
 
-import time
-
 
 class TestWindow:
     def __init__(self, sway, title):
@@ -39,8 +37,11 @@ class TestWindow:
                 ipc.main_quit()
 
         sway.ipc.on('window::new', on_window_new)
-        sway.ipc.main(timeout=1)
+        sway.ipc.main(timeout=5)
         sway.ipc.off(on_window_new)
+
+        if self.con == None:
+            raise Exception('could not open a new window')
 
     def close(self):
         self.con.command('kill')
@@ -48,7 +49,7 @@ class TestWindow:
             if e.container.name == self.title:
                 ipc.main_quit()
         self.sway.ipc.on('window::close', on_window_close)
-        self.sway.ipc.main(timeout=1)
+        self.sway.ipc.main(timeout=5)
         self.sway.ipc.off(on_window_close)
 
 
@@ -61,7 +62,6 @@ class Sway:
         self.variant = variant
 
     def open_window(self):
-
         title = 'window-%d' % Sway.window_counter
         Sway.window_counter += 1
 
