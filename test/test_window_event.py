@@ -4,10 +4,12 @@ import os
 def test_window_new_event(sway):
     env = os.environ.copy()
     if sway.variant == 'sway':
-        del env['DISPLAY']
+        if 'DISPLAY' in env:
+            del env['DISPLAY']
         env['WAYLAND_DISPLAY'] = sway.display
     elif sway.variant == 'i3':
-        del env['WAYLAND_DISPLAY']
+        if 'WAYLAND_DISPLAY' in env:
+            del env['WAYLAND_DISPLAY']
         env['DISPLAY'] = sway.display
 
     title = 'test-window-event'
