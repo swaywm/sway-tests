@@ -1,9 +1,6 @@
-from util.sway import Sway
-import time
-
-def test_split(sway: Sway):
+def test_split_close(sway):
     '''
-    test that a nested split container opens and closes correctly without
+    Test that a nested split container opens and closes correctly without
     crashing
     '''
 
@@ -22,3 +19,58 @@ def test_split(sway: Sway):
 
     ws = sway.focused().workspace()
     assert len(ws.nodes) == 2
+    # TODO test that the layout updated correctly
+
+def test_split_focus(sway):
+    '''
+    Test that focusing a split container in a direction focuses the focus
+    inactive view of the split container.
+    '''
+    win1 = sway.open_window()
+    win2 = sway.open_window()
+    win3 = sway.open_window()
+
+    sway.ipc.command('focus left')
+    sway.ipc.command('splitv')
+
+    win4 = sway.open_window()
+
+
+    # it should look like this
+    '''---
+    |  2  |
+    |1 - 3|
+    |  4  |
+    ----'''
+
+    tree = sway.ipc.get_tree()
+
+    focused = tree.find_focused()
+
+    assert focused.id == win4.id
+    assert focused.parent.nodes[0].id == win2.id
+    assert focused.parent.nodes[0].parent.nodes[0]
+
+    ws = focused.workspace()
+
+    assert ws.nodes[0].id == win1.id
+    assert ws.nodes[2].id == win3.id
+
+    # focusing out of the split in a direction should work
+    sway.ipc.command('focus right')
+
+    assert sway.focused().id == win3.id
+
+    # now test that focusing in a direction on the split container will focus
+    # the focus-inactive child
+    sway.ipc.command('focus left')
+
+    assert sway.focused().id == win4.id
+
+    sway.ipc.command('focus up')
+    sway.ipc.command('focus right')
+    sway.ipc.command('focus left')
+
+    assert sway.focused().id == win2.id
+
+
