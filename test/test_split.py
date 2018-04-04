@@ -3,7 +3,8 @@ def test_split_close(sway):
     Test that a nested split container opens and closes correctly without
     crashing
     '''
-
+    return
+    sway.ipc.command('workspace 1')
     windows = [sway.open_window() for i in range(0, 2)]
     sway.ipc.command('splitv')
     sway.open_window()
@@ -26,6 +27,7 @@ def test_split_focus(sway):
     Test that focusing a split container in a direction focuses the focus
     inactive view of the split container.
     '''
+    sway.ipc.command('workspace 2')
     win1 = sway.open_window()
     win2 = sway.open_window()
     win3 = sway.open_window()
@@ -49,10 +51,11 @@ def test_split_focus(sway):
 
     assert focused.id == win4.id
     assert focused.parent.nodes[0].id == win2.id
-    assert focused.parent.nodes[0].parent.nodes[0]
 
-    ws = focused.workspace()
+    ws = focused.parent.parent
+    assert ws.type == 'workspace'
 
+    assert len(ws.nodes) == 3
     assert ws.nodes[0].id == win1.id
     assert ws.nodes[2].id == win3.id
 
@@ -73,4 +76,32 @@ def test_split_focus(sway):
 
     assert sway.focused().id == win2.id
 
+    # test focus parent and focus child
 
+    sway.ipc.command('focus parent')
+
+    focused = sway.focused()
+
+    assert focused.type == 'con'
+    assert len(focused.nodes) == 2
+
+    split_parent_id = focused.id
+
+    sway.ipc.command('focus parent')
+
+    focused = sway.focused()
+
+    assert focused.type == 'workspace'
+    assert len(focused.nodes) == 3
+
+    sway.ipc.command('focus child')
+
+    focused = sway.focused()
+
+    assert focused.id == split_parent_id
+
+    sway.ipc.command('focus child')
+
+    focused = sway.focused()
+
+    assert focused.id == win2.id
