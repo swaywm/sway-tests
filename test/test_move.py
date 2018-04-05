@@ -120,8 +120,10 @@ def test_move_out_of_split(sway):
     assert ws.nodes[2].id == view3.id
     assert ws.nodes[2].focused
 
-def test_move_out_of_split_with_one_container(sway):
+def test_move_out_of_split_flattening(sway):
     '''
+    # when moving out of a split that leaves no children left within the
+    # container, the container should flatten.
     (view1) (container (view2 focus))
     -> move left
     (view1) (view2 focus)
