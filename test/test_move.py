@@ -21,9 +21,9 @@ def test_move_left_from_center(sway):
 
 def test_move_right_from_center(sway):
     '''
-    (container (view a) (view b focus) (view c))
+    (container (view 1) (view 2 focus) (view 3))
     -> move right
-    (container (view a) (view c) (view b focus))
+    (container (view 1) (view 3) (view 2 focus))
     '''
 
     view1 = sway.open_window('view1')
@@ -42,15 +42,13 @@ def test_move_right_from_center(sway):
 
 def test_move(sway):
     '''
-    (workspace
-        (container L_VERT (view 1))
-        (container L_HORIZ
-          (view 2) (view 3 focus)))
+    (container L_VERT (view 1))
+    (container L_HORIZ
+      (view 2) (view 3 focus))
     -> move up
-    (workspace
-        (container L_VERT
-          (view 1) (view 3 focus))
-        (container L_HORIZ (view 2)))
+    (container L_VERT
+      (view 1) (view 3 focus))
+    (container L_HORIZ (view 2))
     '''
 
     view1 = sway.open_window('view1')
@@ -64,10 +62,10 @@ def test_move(sway):
 def test_move_into_split(sway):
     '''
     (view 1 focus)
-    (container view2 (view3 focus-inactive) view4)
+    (container (view2) (view3 focus-inactive) (view4))
     (view 5)
     -> move right
-    (container view2 view3 (view1 focus) view4)
+    (container (view2) (view3) (view1 focus) (view4))
     (view 5)
     '''
     view1 = sway.open_window('view1')
@@ -98,9 +96,9 @@ def test_move_into_split(sway):
 
 def test_move_out_of_split(sway):
     '''
-    view1 (container view2 (view3 focus))
+    (view1) (container (view2) (view3 focus))
     -> move right
-    view1 (container view2) (view3 focus)
+    (view1) ((container) (view2)) ((view3 focus)
     '''
     view1 = sway.open_window('view1')
     view2 = sway.open_window('view2')
