@@ -1,7 +1,6 @@
 from subprocess import Popen, check_output, CalledProcessError, PIPE
 import sys
 import time
-from shutil import which
 from os import listdir, path
 import re
 import pytest
@@ -9,7 +8,6 @@ import atexit
 
 display = None
 xvfb_proc = None
-XVFB = 'Xvfb'
 LOCKDIR = '/tmp'
 
 
@@ -23,9 +21,8 @@ def get_open_display():
         i += 1
 
 
-
-def start_server(display):
-    xvfb = Popen([XVFB, ':%d' % display])
+def start_server(display, xserver_command):
+    xvfb = Popen([xserver_command, ':%d' % display])
     # wait for the lock file to make sure the server is running
     lockfile = path.join(LOCKDIR, '.X%d-lock' % display)
     tries = 0
@@ -45,22 +42,14 @@ def start_server(display):
     return xvfb
 
 
-def check_dependencies():
-    if not which(XVFB):
-        print('Xvfb is required to run tests')
-        print('Command "%s" not found in PATH' % XVFB)
-        pytest.exit(127)
-
-
 @atexit.register
 def at_exit():
     if xvfb_proc:
         xvfb_proc.terminate()
 
 
-def get_x11_display():
+def get_x11_display(xserver_command):
     global display
-    global xvfb_proc
 
     if display:
         return display

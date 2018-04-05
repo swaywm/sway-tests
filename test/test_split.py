@@ -37,7 +37,6 @@ def test_split_focus(sway):
 
     win4 = sway.open_window()
 
-
     # it should look like this
     '''---
     |  2  |

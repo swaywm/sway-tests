@@ -45,9 +45,11 @@ class TestWindow:
 
     def close(self):
         self.con.command('kill')
+
         def on_window_close(ipc, e):
             if e.container.name == self.title:
                 ipc.main_quit()
+
         self.sway.ipc.on('window::close', on_window_close)
         self.sway.ipc.main(timeout=5)
         self.sway.ipc.off(on_window_close)
