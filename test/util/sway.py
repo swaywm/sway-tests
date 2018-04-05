@@ -62,16 +62,17 @@ class TestWindow:
 
 
 class Sway:
-    window_counter = 0
+    window_counter = 1
 
     def __init__(self, ipc, display, variant):
         self.ipc = ipc
         self.display = display
         self.variant = variant
 
-    def open_window(self):
-        title = 'window-%d' % Sway.window_counter
-        Sway.window_counter += 1
+    def open_window(self, title=None):
+        if not title:
+            title = 'window-%d' % Sway.window_counter
+            Sway.window_counter += 1
 
         win = TestWindow(self, title)
 
