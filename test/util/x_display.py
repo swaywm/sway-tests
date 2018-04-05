@@ -21,7 +21,7 @@ def get_open_display():
 
 
 def start_server(xserver_command, display):
-    xvfb = Popen([xserver_command, ':%d' % display])
+    xvfb = Popen(xserver_command + [':%d' % display])
     # wait for the lock file to make sure the server is running
     lockfile = '/tmp/.X%d-lock' % display
     tries = 0

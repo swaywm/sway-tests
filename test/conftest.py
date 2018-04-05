@@ -89,9 +89,9 @@ def sway():
         xserver_command = ''
 
         if headless:
-            xserver_command = which(XVFB)
+            xserver_command = [which(XVFB), '-screen', '0', '1280x800x8']
         else:
-            xserver_command = which(XEPHYR)
+            xserver_command = [which(XEPHYR), '-screen', '1280x800x8']
 
         (xserver_proc, display) = get_x11_display(xserver_command)
         env = os.environ.copy()
