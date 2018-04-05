@@ -79,3 +79,9 @@ class Sway:
     def focused(self):
         root = self.ipc.get_tree()
         return root.find_focused()
+
+    def cmd(self, content):
+        return self.ipc.command(content)
+
+    def workspace(self):
+        return self.ipc.get_tree().find_focused().workspace()
