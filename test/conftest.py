@@ -135,7 +135,7 @@ def sway():
                 tries += 1
                 if (tries > 100):
                     raise e
-                time.sleep(0.001)
+                time.sleep(0.01)
 
         if variant == 'sway':
             # XXX this is a hacky way to get the WAYLAND_DISPLAY

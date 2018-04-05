@@ -85,9 +85,11 @@ def test_move_into_split(sway):
 
     assert len(ws.nodes) == 2
 
+    assert ws.nodes[1].id == view4.id
     split = ws.nodes[0]
     assert len(split.nodes) == 3
     assert split.nodes[0].id == view2.id
     assert split.nodes[1].id == view3.id
     assert split.nodes[2].id == view1.id
     assert split.nodes[2].focused
+
