@@ -64,19 +64,21 @@ def test_move(sway):
 def test_move_into_split(sway):
     '''
     (view 1 focus)
-    (container view2 view3)
-    (view 4)
+    (container view2 (view3 focus-inactive) view4)
+    (view 5)
     -> move right
-    (container view2 view3 (view1 focus))
-    (view 4)
+    (container view2 view3 (view1 focus) view4)
+    (view 5)
     '''
     view1 = sway.open_window('view1')
     view2 = sway.open_window('view2')
-    view4 = sway.open_window('view4')
+    view5 = sway.open_window('view5')
     view2.focus()
     view2.command('splitv')
     view3 = sway.open_window('view3')
+    view4 = sway.open_window('view4')
 
+    view3.focus()
     view1.focus()
     sway.ipc.command('move right')
 
@@ -85,11 +87,12 @@ def test_move_into_split(sway):
 
     assert len(ws.nodes) == 2
 
-    assert ws.nodes[1].id == view4.id
-    split = ws.nodes[0]
-    assert len(split.nodes) == 3
-    assert split.nodes[0].id == view2.id
-    assert split.nodes[1].id == view3.id
-    assert split.nodes[2].id == view1.id
-    assert split.nodes[2].focused
+    assert ws.nodes[1].id == view5.id
+    split = ws.nodes[0].nodes
+    assert len(split) == 4
+    assert split[0].id == view2.id
+    assert split[1].id == view3.id
+    assert split[2].id == view1.id
+    assert split[3].id == view4.id
+    assert split[2].focused
 
