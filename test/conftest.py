@@ -62,7 +62,7 @@ def pytest_generate_tests(metafunc):
         )
 
 
-@pytest.fixture(scope='function')
+@pytest.yield_fixture(scope='function')
 def sway():
     assert sway_path
 
@@ -82,6 +82,7 @@ def sway():
     check_dependencies(variant, headless)
 
     display = None
+    xserver_proc = None
     proc = None
 
     if variant == 'i3':
@@ -92,7 +93,7 @@ def sway():
         else:
             xserver_command = which(XEPHYR)
 
-        display = get_x11_display(xserver_command)
+        (xserver_proc, display) = get_x11_display(xserver_command)
         env = os.environ.copy()
         env['DISPLAY'] = display
         proc = Popen(
@@ -149,3 +150,5 @@ def sway():
         sway = Sway(ipc, display, variant)
         yield sway
         proc.terminate()
+        if xserver_proc:
+            xserver_proc.terminate()

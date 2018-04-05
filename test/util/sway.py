@@ -74,9 +74,7 @@ class Sway:
             title = 'window-%d' % Sway.window_counter
             Sway.window_counter += 1
 
-        win = TestWindow(self, title)
-
-        return win
+        return TestWindow(self, title)
 
     def focused(self):
         root = self.ipc.get_tree()

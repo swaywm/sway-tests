@@ -6,16 +6,15 @@ import re
 import pytest
 import atexit
 
-display = None
-xvfb_proc = None
-LOCKDIR = '/tmp'
-
 
 def get_open_display():
     i = 0
     while True:
         try:
-            check_output(['lsof', '/tmp/.X11-unix/X%d' % i], stderr=PIPE)
+            # TODO to make this work in parallel, we'll need to have our own
+            # lock directory
+            if not path.exists('/tmp/.X%d-lock'):
+                check_output(['lsof', '/tmp/.X11-unix/X%d' % i], stderr=PIPE)
         except CalledProcessError:
             return i
         i += 1
@@ -42,14 +41,8 @@ def start_server(xserver_command, display):
     return xvfb
 
 
-@atexit.register
-def at_exit():
-    if xvfb_proc:
-        xvfb_proc.terminate()
-
-
 def get_x11_display(xserver_command):
     open_display = get_open_display()
     xvfb_proc = start_server(xserver_command, open_display)
     display = ':%d' % open_display
-    return display
+    return (xvfb_proc, display)
