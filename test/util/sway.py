@@ -54,6 +54,12 @@ class TestWindow:
         self.sway.ipc.main(timeout=5)
         self.sway.ipc.off(on_window_close)
 
+    def focus(self):
+        self.con.command('focus')
+
+    def command(self, cmd):
+        self.con.command(cmd)
+
 
 class Sway:
     window_counter = 0
