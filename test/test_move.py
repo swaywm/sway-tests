@@ -119,3 +119,22 @@ def test_move_out_of_split(sway):
 
     assert ws.nodes[2].id == view3.id
     assert ws.nodes[2].focused
+
+def test_move_out_of_split_with_one_container(sway):
+    '''
+    (view1) (container (view2 focus))
+    -> move left
+    (view1) (view2 focus)
+    '''
+    view1 = sway.open_window('view1')
+    view2 = sway.open_window('view2')
+    view2.command('splith')
+    sway.ipc.command('move left')
+
+    tree = sway.ipc.get_tree()
+    ws = tree.workspaces()[0]
+
+    assert len(ws.nodes) == 2
+
+    assert ws.nodes[0].id == view1.id
+    assert ws.nodes[1].id == view2.id
