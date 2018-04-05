@@ -62,7 +62,7 @@ def pytest_generate_tests(metafunc):
         )
 
 
-@pytest.yield_fixture()
+@pytest.fixture(scope='function')
 def sway():
     assert sway_path
 
@@ -92,7 +92,7 @@ def sway():
         else:
             xserver_command = which(XEPHYR)
 
-        display = get_x11_display(xserver_command, headless)
+        display = get_x11_display(xserver_command)
         env = os.environ.copy()
         env['DISPLAY'] = display
         proc = Popen(

@@ -3,8 +3,6 @@ def test_split_close(sway):
     Test that a nested split container opens and closes correctly without
     crashing
     '''
-    return
-    sway.ipc.command('workspace 1')
     windows = [sway.open_window() for i in range(0, 2)]
     sway.ipc.command('splitv')
     sway.open_window()
@@ -27,7 +25,6 @@ def test_split_focus(sway):
     Test that focusing a split container in a direction focuses the focus
     inactive view of the split container.
     '''
-    sway.ipc.command('workspace 2')
     win1 = sway.open_window()
     win2 = sway.open_window()
     win3 = sway.open_window()

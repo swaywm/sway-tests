@@ -21,7 +21,7 @@ def get_open_display():
         i += 1
 
 
-def start_server(display, xserver_command):
+def start_server(xserver_command, display):
     xvfb = Popen([xserver_command, ':%d' % display])
     # wait for the lock file to make sure the server is running
     lockfile = path.join(LOCKDIR, '.X%d-lock' % display)
@@ -49,13 +49,7 @@ def at_exit():
 
 
 def get_x11_display(xserver_command):
-    global display
-
-    if display:
-        return display
-
-    check_dependencies()
     open_display = get_open_display()
-    xvfb_proc = start_server(open_display)
+    xvfb_proc = start_server(xserver_command, open_display)
     display = ':%d' % open_display
     return display
