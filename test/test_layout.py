@@ -12,10 +12,6 @@ def test_layout_change_split(sway):
         view1 = split.nodes[0]
         view2 = split.nodes[1]
 
-        # these should be unchanged
-        assert view1.layout == 'splith'
-        assert view2.layout == 'splith'
-
         if layout == 'splitv':
             assert view1.rect.x == view2.rect.x
             assert view1.rect.y < view2.rect.y
