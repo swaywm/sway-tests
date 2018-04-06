@@ -140,3 +140,28 @@ def test_move_out_of_split_flattening(sway):
 
     assert ws.nodes[0].id == view1.id
     assert ws.nodes[1].id == view2.id
+
+def test_move_changes_workspace_layout(sway):
+    '''
+    (workspace HORIZ (view1) (view2 focus))
+    -> move down
+    (workspace VERT (view2 focus) (view1))
+    '''
+    ws = sway.workspace()
+
+    assert ws.layout == 'splith'
+    assert ws.type == 'workspace'
+    assert ws.name == '1'
+
+    view1 = sway.open_window('view1')
+    view2 = sway.open_window('view2')
+
+    view2.focus()
+    sway.cmd('move down')
+
+    ws = sway.workspace()
+
+    assert len(ws.nodes) == 2
+    assert ws.layout == 'splitv'
+    assert ws.type == 'workspace'
+    assert ws.name == '1'
