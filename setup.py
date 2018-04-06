@@ -15,11 +15,11 @@ setup(
     url='https://github.com/swaywm/sway-tests',
     author='Tony Crisci',
     author_email='tony@dubstepdish.com',
-    license='BSD',
+    license='MIT',
     classifiers=[
         'Development Status :: 4 - Beta',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: BSD License',
+        'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
