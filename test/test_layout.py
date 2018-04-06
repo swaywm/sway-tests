@@ -30,3 +30,27 @@ def test_layout_change_split(sway):
 
     sway.cmd('layout toggle split')
     assert_correct_layout('splith')
+
+def test_change_workspace_child_layout(sway):
+    view1 = sway.open_window()
+    view2 = sway.open_window()
+
+    view1.command('layout splitv')
+
+    ws = sway.ipc.get_tree().workspaces()[0]
+
+    assert len(ws.nodes) == 1
+    split = ws.nodes[0]
+
+    assert split.layout == 'splitv'
+    assert len(split.nodes) == 2
+
+    view2.command('layout splith')
+
+    ws = sway.ipc.get_tree().workspaces()[0]
+
+    assert len(ws.nodes) == 1
+    split = ws.nodes[0]
+
+    assert split.layout == 'splith'
+    assert len(split.nodes) == 2
