@@ -32,6 +32,9 @@ def test_layout_change_split(sway):
     assert_correct_layout('splith')
 
 def test_change_workspace_child_layout(sway):
+    ws = sway.ipc.get_tree().workspaces()[0]
+    assert(ws.layout == 'splith')
+
     view1 = sway.open_window()
     view2 = sway.open_window()
 
@@ -44,6 +47,9 @@ def test_change_workspace_child_layout(sway):
 
     assert split.layout == 'splitv'
     assert len(split.nodes) == 2
+
+    # workspace layout should be unaffected
+    assert(ws.layout == 'splith')
 
     view2.command('layout splith')
 
