@@ -165,3 +165,34 @@ def test_move_changes_workspace_layout(sway):
     assert ws.layout == 'splitv'
     assert ws.type == 'workspace'
     assert ws.name == '1'
+
+def test_move_workspace_auto_back_and_forth(sway):
+    '''
+    Assert that with workspace_auto_back_and_forth enabled views go to the
+    right workspace.
+    '''
+    sway.cmd('workspace_auto_back_and_forth yes')
+    sway.cmd('workspace 2')
+    view = sway.open_window('view')
+    view.focus()
+    assert sway.workspace().name == "2"
+    assert len(sway.workspace().nodes) == 1
+
+    # should move container to previous workspace (1)
+    sway.cmd('move container to workspace 2')
+    tree = sway.ipc.get_tree()
+    ws1 = tree.workspaces()[0]
+    assert ws1.name == "1"
+    assert len(ws1.nodes) == 1
+    ws2 = sway.workspace()
+    assert ws2.name == "2"
+    assert not ws2.nodes
+
+    sway.cmd('workspace 1')
+    view.focus()
+    # should move to workspace 2
+    sway.cmd('move container to workspace 2')
+    sway.cmd('workspace back_and_forth')
+    ws = sway.workspace()
+    assert ws.name == "2"
+    assert len(ws.nodes) == 1
