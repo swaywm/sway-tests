@@ -1,3 +1,6 @@
+import pytest
+
+@pytest.mark.parameterized('sway', [('asdf')], indirect=True)
 def test_ipc_version(sway):
     version = sway.ipc.get_version()
     if sway.variant == 'sway':

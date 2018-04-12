@@ -3,33 +3,23 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, GLib
 import os
 from subprocess import Popen, PIPE, STDOUT
+from .gtk_window_starter import GtkWindowStarter
 from i3ipc import Con
-
+import uuid
 
 class TestWindow:
-    def __init__(self, sway, title):
+    def __init__(self, sway, title, window_starter):
         self.id = -1
         self.sway = sway
         self.title = title
         env = os.environ.copy()
-
-        if sway.variant == 'sway':
-            if 'DISPLAY' in env:
-                del env['DISPLAY']
-            env['WAYLAND_DISPLAY'] = sway.display
-        elif sway.variant == 'i3':
-            if 'WAYLAND_DISPLAY' in env:
-                del env['WAYLAND_DISPLAY']
-            env['DISPLAY'] = sway.display
-
-        self.proc = Popen(
-            ['test/util/gtk-window.py', '--title', title],
-            env=env,
-            stdout=PIPE,
-            stderr=STDOUT)
-
         self.con = None
 
+        window_starter.start_window(title)
+        print('starting the window')
+
+        self.con = sway.ipc.get_tree().find_named(title)
+        '''
         def on_window_new(ipc, e):
             if e.container.name == title:
                 self.id = e.container.id
@@ -37,8 +27,9 @@ class TestWindow:
                 ipc.main_quit()
 
         sway.ipc.on('window::new', on_window_new)
-        sway.ipc.main(timeout=5)
+        sway.ipc.main(timeout=1)
         sway.ipc.off(on_window_new)
+        '''
 
         if self.con == None:
             raise Exception('could not open a new window')
@@ -69,12 +60,15 @@ class Sway:
         self.display = display
         self.variant = variant
 
+        self.window_starter = GtkWindowStarter(display)
+        self.window_starter.start()
+
     def open_window(self, title=None):
         if not title:
             title = 'window-%d' % Sway.window_counter
             Sway.window_counter += 1
 
-        return TestWindow(self, title)
+        return TestWindow(self, title, self.window_starter)
 
     def focused(self):
         root = self.ipc.get_tree()

@@ -3,12 +3,14 @@
 import i3ipc
 from util.x_display import get_x11_display
 from util.sway import Sway
+from util.gtk_window_starter import GtkWindowStarter
 from subprocess import Popen, PIPE, STDOUT, check_output
 import os
 import sys
 import time
 import pytest
 from shutil import which
+import uuid
 
 XVFB = 'Xvfb'
 XEPHYR = 'Xephyr'
@@ -63,7 +65,7 @@ def pytest_generate_tests(metafunc):
 
 
 @pytest.yield_fixture(scope='function')
-def sway():
+def sway(request):
     assert sway_path
 
     version = check_output([sway_path, '--version']).decode('utf-8')
@@ -148,7 +150,11 @@ def sway():
                     break
 
         sway = Sway(ipc, display, variant)
+
         yield sway
+        sway.window_starter.main_loop.quit()
+
         proc.terminate()
+
         if xserver_proc:
             xserver_proc.terminate()
